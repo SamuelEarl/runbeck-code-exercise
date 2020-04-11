@@ -1,5 +1,8 @@
 node_modules
-output
+
+# Output files
+output-correct-format.*
+output-incorrect-format.*
 
 # Log files
 npm-debug.log*

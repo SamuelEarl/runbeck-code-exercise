@@ -1,13 +1,23 @@
+const fs = require("fs");
+const fsPromises = fs.promises;
+const del = require("del");
 const inquirer = require("inquirer");
-const fileReader = require("./file-reader.js");
+const createOutput = require("./create-output");
 
 const start = async () => {
-
   try {
+    // Remove any pre-existing output files.
+    await del([
+      "output-correct-format.*",
+      "output-incorrect-format.*"
+    ]);
+
+    // The inquirer package is used to create console applications with prompts, validation, etc.
+    // For documentation see https://www.npmjs.com/package/inquirer.
     const answers = await inquirer.prompt([
       {
         type: "input",
-        name: "location",
+        name: "filepath",
         message: "Where is the file located?",
         validate: async function(value) {
           try {
@@ -16,33 +26,41 @@ const start = async () => {
               // It will match any file path string that ends with ".csv" or ".tsv".
               /[\s\S]*\.(csv|tsv)/
             );
-            // If the input value does not match the regular expression, then print the following validation message.
+            // If the input value does not match the regular expression, then the following
+            // validation message will be printed to the console.
             if (!path) {
               return "You must provide a valid file path with either a \".csv\" or \".tsv\" file extension.";
             }
 
-            const fileExists = await fileReader(value);
-            // console.log("FILE EXISTS:", fileExists);
-            // If no file exists at the location provided, then print the following validation message.
-            if (fileExists.code === "ENOENT") {
-              return "No file exists at that path. Please try again.";
-            }
+            // Check if the provided filepath exists. If it does not, then an error will be
+            // thrown and that error will be handled in the catch block.
+            await fsPromises.access(value);
 
-            // If the file path is valid and the file exists, then accept the input and continue to the next prompt.
+            // If the file path is valid and the file exists, then accept the input and continue to
+            // the next prompt.
             return true;
           }
           catch(err) {
-            console.error("Where is the file located? ERROR:", err);
+            // If no file exists at the filepath provided, then the following validation message
+            // will be printed to the console.
+            if (err && err.code == "ENOENT") {
+              return "No file exists at that path. Please try again.";
+            }
+            // If a different error occurs, then log it to the console.
+            else {
+              console.error("Where is the file located? ERROR:", err);
+            }
           }
         }
       },
       {
         type: "checkbox",
-        name: "format",
+        name: "fileFormat",
         message: "Is the file format CSV or TSV?",
         choices: ["CSV", "TSV"],
         validate: function(answer) {
-          // Input is required. If the user presses "Enter" without selecting either CSV or TSV, then print the following validation message.
+          // Input is required. If the user presses "Enter" without selecting either CSV or TSV,
+          // then the following validation message will be printed to the console.
           if (answer.length < 1) {
             return "You must choose a file format.";
           }
@@ -52,7 +70,7 @@ const start = async () => {
       },
       {
         type: "input",
-        name: "fields",
+        name: "numberOfFields",
         message: "How many fields should each record contain (1, 2, or 3)?",
         validate: function(value) {
           // A number between 1 and 3 (inclusive) is required.
@@ -63,29 +81,25 @@ const start = async () => {
           if (num) {
             return true;
           }
-          // If the input does NOT match the regex, then print the following validation message.
+          // If the input does NOT match the regular expression, then the following validation
+          // message will be printed to the console.
           return "Only the numbers 1, 2, or 3 are accepted.";
         }
       }
     ]);
 
-    console.log(JSON.stringify(answers, null, " "));
+    const filepath = answers.filepath;
+    const fileFormat = answers.fileFormat[0];
+    const numberOfFields = answers.numberOfFields;
 
-    // Read the file from answers.location.
-
-    // Use the answer from answers.format to process the file based on the format.
-
-    // Use the answer from answers.fields to properly format the output file.
-    const location = answers.location;
-    const format = answers.format;
-    const fields = answers.fields;
-    fileReader(location, format, fields);
+    // Call the createOutput module with
+    createOutput(filepath, fileFormat, numberOfFields);
   }
 
   catch(err) {
-    // handle the error...
     console.error("START FUNCTION:", err);
   }
 }
 
+// Start the application.
 start();
