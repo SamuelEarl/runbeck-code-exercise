@@ -101,7 +101,7 @@ const createOutput = async (filepath, fileFormat, numberOfFields) => {
       .on("end", rowCount => console.log(`Parsed ${rowCount} rows`));
   }
   catch(err) {
-    console.error("CREATE OUTPUT ERROR:", err);
+    console.error("CREATE OUTPUT [ERROR]:", err);
   }
 }
 

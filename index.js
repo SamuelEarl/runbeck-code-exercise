@@ -4,6 +4,10 @@ const del = require("del");
 const inquirer = require("inquirer");
 const createOutput = require("./create-output");
 
+/**
+ * When the user runs `npm start` from their terminal, the `start` function will will kickoff
+ * the application.
+ */
 const start = async () => {
   try {
     // Remove any pre-existing output files.
@@ -48,7 +52,7 @@ const start = async () => {
             }
             // If a different error occurs, then log it to the console.
             else {
-              console.error("Where is the file located? ERROR:", err);
+              console.error("Where is the file located? [ERROR]:", err);
             }
           }
         }
@@ -59,13 +63,18 @@ const start = async () => {
         message: "Is the file format CSV or TSV?",
         choices: ["CSV", "TSV"],
         validate: function(answer) {
-          // Input is required. If the user presses "Enter" without selecting either CSV or TSV,
-          // then the following validation message will be printed to the console.
-          if (answer.length < 1) {
-            return "You must choose a file format.";
+          try {
+            // Input is required. If the user presses "Enter" without selecting either CSV or TSV,
+            // then the following validation message will be printed to the console.
+            if (answer.length < 1) {
+              return "You must choose a file format.";
+            }
+            // If a selection is made, then continue to the next prompt.
+            return true;
           }
-          // If a selection is made, then continue to the next prompt.
-          return true;
+          catch(err) {
+            console.error("Is the file format CSV or TSV? [ERROR]:", err);
+          }
         }
       },
       {
@@ -73,17 +82,22 @@ const start = async () => {
         name: "numberOfFields",
         message: "How many fields should each record contain (1, 2, or 3)?",
         validate: function(value) {
-          // A number between 1 and 3 (inclusive) is required.
-          const num = value.match(
-            /[1-3]/
-          );
-          // If the input matches the regular expression, then continue with the prompts.
-          if (num) {
-            return true;
+          try {
+            // A number between 1 and 3 (inclusive) is required.
+            const num = value.match(
+              /[1-3]/
+            );
+            // If the input matches the regular expression, then continue with the prompts.
+            if (num) {
+              return true;
+            }
+            // If the input does NOT match the regular expression, then the following validation
+            // message will be printed to the console.
+            return "Only the numbers 1, 2, or 3 are accepted.";
           }
-          // If the input does NOT match the regular expression, then the following validation
-          // message will be printed to the console.
-          return "Only the numbers 1, 2, or 3 are accepted.";
+          catch(err) {
+            console.error("How many fields should each record contain? [ERROR]:", err);
+          }
         }
       }
     ]);
@@ -92,12 +106,11 @@ const start = async () => {
     const fileFormat = answers.fileFormat[0];
     const numberOfFields = answers.numberOfFields;
 
-    // Call the createOutput module with
+    // Call the createOutput module with the necessary arguments.
     createOutput(filepath, fileFormat, numberOfFields);
   }
-
   catch(err) {
-    console.error("START FUNCTION:", err);
+    console.error("START FUNCTION [ERROR]:", err);
   }
 }
 
