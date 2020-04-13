@@ -98,7 +98,10 @@ const createOutput = async (filepath, fileFormat, numberOfFields) => {
           }
         }
       })
-      .on("end", rowCount => console.log(`Parsed ${rowCount} rows`));
+      .on("end", (rowCount) => {
+        console.log(`Parsed ${rowCount} rows.`);
+        console.log("Your output files are ready.");
+      });
   }
   catch(err) {
     console.error("CREATE OUTPUT [ERROR]:", err);

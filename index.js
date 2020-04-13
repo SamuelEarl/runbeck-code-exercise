@@ -106,7 +106,7 @@ const start = async () => {
     const fileFormat = answers.fileFormat[0];
     const numberOfFields = answers.numberOfFields;
 
-    // Call the createOutput module with the necessary arguments.
+    // Call the createOutput.js module with the necessary arguments.
     createOutput(filepath, fileFormat, numberOfFields);
   }
   catch(err) {
