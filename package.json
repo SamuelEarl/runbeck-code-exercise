@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fast-csv/parse": "^4.1.2",
+    "@fast-csv/parse": "^4.3.6",
     "del": "^5.1.0",
     "inquirer": "^7.1.0"
   }
